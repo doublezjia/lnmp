@@ -1,0 +1,46 @@
+#!/bin/bash
+# description:  nginx
+# processname: nginx
+
+nginx='/usr/local/nginx/sbin/nginx'
+nginxpid='/usr/local/nginx/var/run/nginx.pid'
+lockfile=/var/lock/subsys/nginx
+start(){
+    [ -x $nginx ] || exit 5
+    [ -f $nginxpid ] && echo -e  "\033[0;31;40m Nginx is already start... \033[0m" && exit 1
+    echo -e '\033[0;32;40m Starting Nginx.....  \033[0m'
+    $nginx
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $lockfile && echo -e '\033[0;32;40m Starting Nginx Successful.  \033[0m' || echo -e '\033[0;32;40m Starting Nginx Faild.  \033[0m'
+    return $retval
+}
+stop(){
+    echo -e '\033[0;32;40m Stopping Nginx.....  \033[0m'
+    $nginx -s quit
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile && echo -e '\033[0;32;40m Stopping Nginx Successful.  \033[0m' || echo -e '\033[0;32;40m Stopping Nginx Faild.  \033[0m'
+    return $retval
+}
+restart(){
+    stop
+    sleep 1
+    start
+}
+
+case "$1" in
+    start)
+            start
+            ;;
+    stop)
+            stop
+            ;;
+    restart)
+            restart
+            ;;
+    *)
+            echo $"Usage: $prog {start|stop|restart}"
+            exit 1
+esac
+exit $RETVAL
